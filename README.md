@@ -2,7 +2,7 @@
 
 
 ## Manual ##
-  * [Introduction](introduction.md)
+  * [Introduction](intro.md)
   * [Getting Started](getting-started.md)
   * [Object-Oriented Programming](oop.md)
   * [Tensors](tensors.md)

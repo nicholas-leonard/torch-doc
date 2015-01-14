@@ -1,6 +1,6 @@
 # Getting Started #
 
-Installing Torch can be accomplished by running these two commands:
+Torch can be installed by running these two commands:
 
 ```bash
 $ curl -sk https://raw.githubusercontent.com/torch/ezinstall/master/install-deps | bash
@@ -45,7 +45,7 @@ $ luarocks --server=https://raw.githubusercontent.com/torch/rocks/master list
 Once installed you can run torch with the command "th" from you prompt!
 
 The easiest way to learn and experiment with Torch is by starting an
-interactive session (also known as a torch read-eval-print loop or [TREPL]):
+interactive session (also known as the torch read-eval-print loop or [TREPL](https://github.com/torch/trepl/blob/master/README.md)):
 
 ```bash
 $ th
@@ -75,7 +75,7 @@ To evaluate expressions written in a source file `file.lua`, write
 `th> dofile "file.lua"`.
 
 To run code in a file non-interactively, you can give it as the first
-argument to the th command::
+argument to the `th` command::
 
 ```bash
 $ torch file.lua
@@ -98,6 +98,19 @@ Options:
   -x,--gfx           start gfx server and load gfx env
   -i,--interactive   enter the REPL after executing a script
 ```
+
+TREPL is full of convenient features likes:
+
+* Tab-completion on nested namespaces
+* Tab-completion on disk files (when opening a string)
+* History (preserved between sessions)
+* Pretty print (table introspection and coloring)
+* Auto-print after eval (can be stopped with ;)
+* Each command is profiled, timing is reported
+* No need for '=' to print
+* Easy help with: `? funcname`
+* Self help: `?`
+* Shell commands with: $ cmd (example: `$ ls`)
  
 ## Resources ##
 

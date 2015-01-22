@@ -4,10 +4,10 @@
 ## Manual ##
   * [Introduction](intro.md)
   * [Getting Started](getting-started.md)
-  * [Ecosystem](ecosystem.md)
+  * [Torch Ecosystem](ecosystem.md)
   * [Programming in Lua](programming-in-lua.md)
   * [Object-Oriented Programming](oop.md)
-  * [Tensors](tensors.md)
+  * [Tensors](tensor.md)
   * [Serialization](serialization.md)
   * [Foreign Function Interface](ffi.md)
 

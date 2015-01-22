@@ -10,6 +10,7 @@
   * [Object-Oriented Programming](oop.md)
   * [Serialization](serialization.md)
   * [Foreign Function Interface](ffi.md)
+  * [Datasets](data.md)
   * [Modules](module.md)
   * [Criterions](criterion.md)
   * [Optimization](optim.md)

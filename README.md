@@ -11,7 +11,9 @@
   * [Serialization](serialization.md)
   * [Foreign Function Interface](ffi.md)
   * [Datasets](data.md)
+   * Building your own dataset 
   * [Modules](module.md)
+   * Writing your own torch module 
   * [Criterions](criterion.md)
   * [Optimization](optim.md)
 

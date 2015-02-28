@@ -3,6 +3,7 @@
 
 ## Manual ##
 
+The Basics :
   * [Introduction](intro.md)
   * [Getting Started](getting-started.md)
   * [Torch Ecosystem](ecosystem.md)
@@ -10,6 +11,8 @@
   * [Tensors](tensor.md)
   * [Object-Oriented Programming](oop.md)
   * [Foreign Function Interface](ffi.md)
+ 
+Neural Network Training :
   * [Datasets](data.md)
    * Building your own dataset 
   * [Modules](module.md)

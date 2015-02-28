@@ -1,9 +1,10 @@
-# Torch Documentation #
+# Torch Manual #
 
+Torch has lots of libraries and corresponding reference documentation. 
+But this is where you can try to make some sense out of all of it.
 
-## Manual ##
+## The Basics ##
 
-The Basics :
   * [Introduction](intro.md)
   * [Getting Started](getting-started.md)
   * [Torch Ecosystem](ecosystem.md)
@@ -12,7 +13,8 @@ The Basics :
   * [Object-Oriented Programming](oop.md)
   * [Foreign Function Interface](ffi.md)
  
-Neural Network Training :
+## Neural Network Training ##
+
   * [Datasets](data.md)
    * Building your own dataset 
   * [Modules](module.md)

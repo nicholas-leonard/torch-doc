@@ -95,5 +95,3 @@ table
 > torch.type(7)
 number
 ```
-
-## Serialization ##

@@ -9,28 +9,28 @@ tensors are [serializable](https://github.com/torch/torch7/blob/master/doc/file.
 ## Multi-dimensional matrix ##
 
 A `Tensor` is potentially a multi-dimensional matrix. The number of
-dimensions is unlimited that can be created using
-[LongStorage](https://github.com/torch/torch7/blob/master/doc/storage.md) with more dimensions.
+dimensions is unlimited. The `size` attributed (in Python/Numpy they call this a `shape`) can be set using
+[LongStorage](https://github.com/torch/torch7/blob/master/doc/storage.md) with as many dimensions as 
+required.
 
 Example:
 ```lua
  --- creation of a 4D-tensor 4x5x6x2
  z = torch.Tensor(4,5,6,2)
  --- for more dimensions, (here a 6D tensor) one can do:
- s = torch.LongStorage(6)
- s[1] = 4; s[2] = 5; s[3] = 6; s[4] = 2; s[5] = 7; s[6] = 3;
+ s = torch.LongStorage{4,5,6,2,7,3}
  x = torch.Tensor(s)
 ```
 
 The number of dimensions of a `Tensor` can be queried by
 [dim()](https://github.com/torch/torch7/blob/master/doc/tensor.md#torch.Tensor.dim). 
-Size of the `i-th` dimension is
+The size of the `i-th` dimension is
 returned by [size(i)](https://github.com/torch/torch7/blob/master/doc/tensor.md#torch.Tensor.size). A [LongStorage](https://github.com/torch/torch7/blob/master/doc/storage.md)
 containing all the dimensions can be returned by
 [size()](https://github.com/torch/torch7/blob/master/doc/tensor.md#torch.Tensor.size).
 
 ```lua
-> print(x:nDimension())
+> print(x:dim())
 6
 > print(x:size())
  4
@@ -46,13 +46,14 @@ containing all the dimensions can be returned by
 
 The actual data of a Tensor is contained by a
 [Storage](https://github.com/torch/torch7/blob/master/doc/storage.md). 
-It can be accessed using [storage()](https://github.com/torch/torch7/blob/master/doc/tensor.md#torch.storage). 
+It can be accessed using the 
+[storage()](https://github.com/torch/torch7/blob/master/doc/tensor.md#torch.storage) method. 
 While the memory of a Tensor has to be contained in this unique `Storage`, it might
 not be contiguous: the first position used in the `Storage` is given
 by [storageOffset()](https://github.com/torch/torch7/blob/master/doc/tensor.md#torch.storageOffset) 
 (starting at `1`). And the _jump_ needed to go from one element to another
 element in the `i-th` dimension is given by
-[`stride(i)`](https://github.com/torch/torch7/blob/master/doc/tensor.md#torch.Tensor.stride). 
+[stride(i)](https://github.com/torch/torch7/blob/master/doc/tensor.md#torch.Tensor.stride). 
 In other words, given a 3D tensor :
 
 ```lua
@@ -64,8 +65,7 @@ accessing the element `(3,4,5)` can be done by
 ```
 or equivalently (but slowly!)
 ```lua
-= x:storage()[x:storageOffset()
-           +(3-1)*x:stride(1)+(4-1)*x:stride(2)+(5-1)*x:stride(3)]
+= x:storage()[x:storageOffset()+(x:size(1)-1)*x:stride(1)+(x:size(2)-1)*x:stride(2)+(x:size(3)-1)*x:stride(3)]
 ```
 One could say that a Tensor is a particular way of _viewing_ a
 `Storage`: a `Storage` only represents a chunk of memory, while the
@@ -137,31 +137,47 @@ See [torch.setdefaulttensortype](https://github.com/torch/torch7/blob/master/doc
 By default, the alias "points" on `torch.DoubleTensor`.
 
 
-## Efficient memory management ##
+## Extracting Sub-Tensors ##
 
-_All_ tensor operations in this class do _not_ make any memory copy. All
-these methods transform the existing tensor, or return a new tensor
-referencing _the same storage_. This magical behavior is internally
-obtained by good usage of the [stride()](https://github.com/torch/torch7/blob/master/doc/tensor.md#torch.Tensor.stride) and
-[storageOffset()](tensor.md#torch.storageOffset). Example:
+Many tensor operations in do _not_ make any memory copy, which is good because
+memory copies can be expensive. For example, consider a 2D Tensor from which we want to extract 
+a 2x3 sub-tensor in the top left corner:
 ```lua
-> x = torch.Tensor(5):zero()
-> print(x)
-0
-0
-0
-0
-0
-[torch.DoubleTensor of dimension 5]
-> x:narrow(1, 2, 3):fill(1) -- narrow() returns a Tensor
-                            -- referencing the same Storage as x
-> print(x)
- 0
- 1
- 1
- 1
- 0
-[torch.Tensor of dimension 5]
+> a = torch.Tensor{{1,2,3},{4,5,6},{7,8,9}}
+> b = a:narrow(1,1,2):narrow(2,1,3)
+> print(b)
+ 1  2  3
+ 4  5  6
+[torch.DoubleTensor of dimension 2x3]
+```
+We used the [narrow()](https://github.com/torch/torch7/blob/master/doc/tensor.md#torch.Tensor.narrow) 
+method to do so. If we wanted to extract the second row vector, we could have used
+[select()](https://github.com/torch/torch7/blob/master/doc/tensor.md#torch.Tensor.select):
+```lua
+> c = a:select(1,2)
+> print(c)
+ 4
+ 5
+ 6
+[torch.DoubleTensor of dimension 3]
+```
+These methods are good examples of how multiple Tensors can reference the same storage. 
+To illustrate this, let us [fill()](https://github.com/torch/torch7/blob/master/doc/tensor.md#torch.fill) Tensor `c` with `-1`:
+```
+th> c:fill(-1)
+-1
+-1
+-1
+[torch.DoubleTensor of dimension 3]
+th> print(a)
+ 1  2  3
+-1 -1 -1
+ 7  8  9
+[torch.DoubleTensor of dimension 3x3]
+th> print(b)
+ 1  2  3
+-1 -1 -1
+[torch.DoubleTensor of dimension 2x3]
 ```
 
 If you really need to copy a `Tensor`, you can use the 
@@ -174,6 +190,85 @@ Or the convenience method
 > y = x:clone()
 ```
 
+### Efficient Memory Management ###
+
+Often times Tensor operations will be repeatly executed in loops. 
+For example consider the following function which we need for some reason:
+```lua
+function beuhp(a)
+   local res = a:clone():zero() -- the result Tensor
+   for i=1,10 do
+      local b = a:clone()
+      local c = torch.add(b,i)
+      local d = torch.pow(c,i)
+      res = res + c + d
+   end
+   return res
+end
+```
+This is a good example of really bad code as for every iteration it re-allocates memory for different Tensors.
+It would be much better to reusing existing memory as much as possible. 
+Let us make it a little better by taking the memory allocations out of the for loop and by 
+using in-place operations instead of operations that allocate new memory by creating new storages:
+```lua
+function beuhp(a)
+   local res = a:clone():zero() -- the result Tensor
+   local b = a.new(a:size()) -- an empty tensor of same type and size as a
+   for i=1,10 do
+      b:copy(a)
+      b:add(i)
+      res:add(b)
+      b:pow(i)
+      res:add(b)
+   end
+   return res
+end
+```
+We could further optimize this function by using an upvalue (in this case `beuhpBuffer`) 
+to reuse the internal memory buffer between function calls, thereby making the 
+function a [closure](http://en.wikipedia.org/wiki/Closure_%28computer_programming%29):
+```lua
+local beuhpBuffer = {}
+function beuhp(a)
+   local res = a:clone():zero() -- the result Tensor
+   local aType = torch.type(a)
+   local b = beuhpBuffer[aType] or a.new() 
+   beuhpBuffer[aType] = b
+   b:resizeAs(a)
+   for i=1,10 do
+      b:copy(a)
+      b:add(i)
+      res:add(b)
+      b:pow(i)
+      res:add(b)
+   end
+   return res
+end
+```
+Finally, we could allow the function to accept a result Tensor argument in which the results could be 
+stored. This would allow the function itself to be called multiple times without allocating any memory:
+```lua
+local beuhpBuffer = {}
+function beuhp(res, a)
+   if not a then
+      a = res
+      res a:clone():zero() -- the result Tensor
+   end
+   local aType = torch.type(a)
+   local b = beuhpBuffer[aType] or a.new() 
+   beuhpBuffer[aType] = b
+   b:resizeAs(a)
+   for i=1,10 do
+      b:copy(a)
+      b:add(i)
+      res:add(b)
+      b:pow(i)
+      res:add(b)
+   end
+   return res
+end
+```
+
 ## Package Reference ##
 
 The torch package reference can be found [here](https://github.com/torch/torch7/blob/master/README.md).
@@ -181,3 +276,11 @@ The torch package reference can be found [here](https://github.com/torch/torch7/
 ## BLAS ##
 
 ## CUDA Tensors ##
+
+Not mentionned above is a special Tensor type : `CudaTensor`. 
+Like a `FloatTensor` it stores 4 byte floating point numbers (floats). However, instead of 
+being stored on the host for CPU processing, they are stored on a device, 
+specifically an NVIDIA GPU device that support CUDA. 
+Like the`FloatTensor` and `DoubleTensor`, the `CudaTensor` supports
+most numeric operations which are made available when 
+the [cutorch](https://github.com/torch/cutorch) package is imported.

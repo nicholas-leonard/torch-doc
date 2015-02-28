@@ -95,3 +95,24 @@ table
 > torch.type(7)
 number
 ```
+
+## Serialization ##
+
+Torch provides 4 high-level methods to serialize or deserialize arbitrary Lua and Torch objects.
+
+The first two functions are useful to serialize or deserialize data to or from files:
+
+  - [torch.save(filename, object, [format])](https://github.com/torch/torch7/blob/master/doc/serialization.md#torch.save)
+  - [[object] torch.load(filename, [format])](https://github.com/torch/torch7/blob/master/doc/serialization.md#torch.load)
+
+The next two functions are useful to serialize or deserialize data to or from strings:
+
+  - [[str] torch.serialize(object, [format])](https://github.com/torch/torch7/blob/master/doc/serialization.md#torch.serialize)
+  - [[object] torch.deserialize(str, [format])](https://github.com/torch/torch7/blob/master/doc/serialization.md#torch.deserialize)
+
+Serializing to files is useful to save arbitrary data structures, or share them with other people.
+Serializing to strings is useful to store arbitrary data structures in databases, or 3rd party
+software, or transfering objects between different processes or Lua states.
+
+These functions can be used to serialize any objects instantiated with a `torch.class` metatable, as well 
+as any of the Lua types (excluding threads and coroutines, for obvious reasons).

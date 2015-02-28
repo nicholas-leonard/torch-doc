@@ -8,7 +8,6 @@
   * [Programming in Lua](programming-in-lua.md)
   * [Tensors](tensor.md)
   * [Object-Oriented Programming](oop.md)
-  * [Serialization](serialization.md)
   * [Foreign Function Interface](ffi.md)
   * [Datasets](data.md)
    * Building your own dataset 
